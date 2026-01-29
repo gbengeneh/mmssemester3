@@ -1,0 +1,22 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/gbengeneh/semester3-config-repo.git
+          default-label: main
+          clone-on-start: true
+          timeout: 10
+
+# optional but recommended
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
