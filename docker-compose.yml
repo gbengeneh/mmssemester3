@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  eureka-server:
+    build: ./eureka_server
+    ports:
+      - "8761:8761"
+  config-server:
+    build: ./config_server
+    ports:
+      - "8888:8888"
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+  user-service:
+    build: ./user_service
+    ports:
+      - "8081:8081"
+  employee-service:
+    build: ./employee_service
+    ports:
+      - "8082:8082"
