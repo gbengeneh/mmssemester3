@@ -20,7 +20,7 @@ WORKDIR /app
 RUN addgroup -g 1000 appgroup && adduser -u 1000 -G appgroup -s /bin/sh -D appuser
 
 # Copy jar from build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY target/user_service-0.0.1-SNAPSHOT.jar app.jar
 
 # Change ownership
 RUN chown -R appuser:appgroup /app

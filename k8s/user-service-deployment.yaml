@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: semester4app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      volumes:
+      - name: config-volume
+        configMap:
+          name: user-service-config
+      containers:
+      - name: user-service
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+        command: ["java"]
+        args: ["-jar", "app.jar", "--spring.config.import=optional:file:/app/config/application.yml[/]", "--spring.config.location=optional:file:/app/config/application.yml"]
+        image: yourregistry/user-service:latest  # Update with your image
+        ports:
+        - containerPort: 8081
+# No eureka/config - use service discovery
+        env:
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8081
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+
+

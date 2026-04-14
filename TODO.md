@@ -1,109 +1,48 @@
-# Microservices Startup Checklist
+# Kubernetes Deployments TODO - UPDATED ✅
 
-## Pre-Startup Verification
-- [ ] Java 17+ is installed and configured
-- [ ] Maven is installed and in PATH
-- [ ] PostgreSQL is running (required for user_service)
-- [ ] Git access to config repo: https://github.com/gbengeneh/semester3-config-repo.git
-- [ ] All dependencies added to pom.xml files
+**Namespace:** semester4app (all resources updated)
 
-## Dependencies Added ✅
-- [x] user_service: spring-cloud-starter-config
-- [x] employee_service: spring-cloud-starter-config
-- [x] api-gateway: spring-cloud-starter-config
+**All manifests in k8s/ (employee_service uses H2 in-memory DB, no external deps):**
+- namespace.yaml
+- configmap.yaml
+- postgres-statefulset.yaml / postgres-service.yaml / postgres-secret.yaml (for user_service only)
+- user-service-deployment.yaml / user-service-service.yaml (port 8081, postgres)
+- employee-service-deployment.yaml / employee-service-service.yaml (port 8082, H2)
+- api-gateway-deployment.yaml / api-gateway-service.yaml (LoadBalancer port 8084)
 
-## Startup Sequence
+**Complete Build & Deploy Steps:**
+1. Build images locally (from project root):
+```
+docker build -t localhost:32000/api-gateway:latest ./api-gateway
+docker build -t localhost:32000/employee-service:latest ./employee_service  
+docker build -t localhost:32000/user-service:latest ./user_service
+```
+(Use kind load if local cluster, or your registry)
 
-### Step 1: Eureka Server (Service Discovery)
-- [ ] Navigate to eureka_server directory
-- [ ] Run: `mvnw spring-boot:run`
-- [ ] Verify: http://localhost:8761 shows Eureka Dashboard
-- [ ] Status: ⏳ Pending
+2. Update image fields in deployments to match (e.g. yourregistry/api-gateway:latest)
 
-### Step 2: Config Server (Configuration Management)
-- [ ] Navigate to config_server directory
-- [ ] Run: `mvnw spring-boot:run`
-- [ ] Verify: http://localhost:8888/actuator/health returns UP
-- [ ] Verify: Logs show successful Git repo clone
-- [ ] Status: ⏳ Pending
+3. Deploy (in order):
+```
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/postgres-secret.yaml 
+kubectl apply -f k8s/postgres-statefulset.yaml
+kubectl apply -f k8s/postgres-service.yaml
+kubectl apply -f k8s/employee-service-deployment.yaml k8s/employee-service-service.yaml
+kubectl apply -f k8s/user-service-deployment.yaml k8s/user-service-service.yaml
+kubectl apply -f k8s/api-gateway-deployment.yaml k8s/api-gateway-service.yaml
+```
 
-### Step 3: User Service (Authentication & User Management)
-- [ ] Navigate to user_service directory
-- [ ] Run: `mvnw spring-boot:run`
-- [ ] Verify: Service appears in Eureka Dashboard as "USER_SERVICE"
-- [ ] Verify: Logs show successful config fetch from Config Server
-- [ ] Verify: PostgreSQL connection successful
-- [ ] Status: ⏳ Pending
+4. Monitor:
+```
+kubectl get all -n semester4app
+kubectl get ingress -n semester4app  # if added
+kubectl logs -f -n semester4app deployment/api-gateway
+```
 
-### Step 4: Employee Service (Employee Management)
-- [ ] Navigate to employee_service directory
-- [ ] Run: `mvnw spring-boot:run`
-- [ ] Verify: Service appears in Eureka Dashboard as "EMPLOYEESERVICE"
-- [ ] Verify: Logs show successful config fetch from Config Server
-- [ ] Verify: H2 database initialized
-- [ ] Status: ⏳ Pending
+**Notes:** 
+- postgres-secret password base64('123'). Recreate if changed.
+- Eureka/Config URLs point to future services.
+- Probes assume actuator enabled.
+- Scale replicas/resources as needed.
 
-### Step 5: API Gateway (API Routing & Security)
-- [ ] Navigate to api-gateway directory
-- [ ] Run: `mvnw spring-boot:run`
-- [ ] Verify: Service appears in Eureka Dashboard as "API-GATEWAY"
-- [ ] Verify: Logs show successful config fetch from Config Server
-- [ ] Verify: Gateway discovers all registered services
-- [ ] Status: ⏳ Pending
-
-## Post-Startup Verification
-- [ ] All 5 services visible in Eureka Dashboard (http://localhost:8761)
-- [ ] No error logs in any service console
-- [ ] Config Server successfully serving configurations
-- [ ] All services registered with Eureka
-- [ ] API Gateway can route to backend services
-
-## Service Status Overview
-
-| Service          | Port | Status | Registered in Eureka | Config Loaded |
-|------------------|------|--------|---------------------|---------------|
-| Eureka Server    | 8761 | ⏳     | N/A                 | N/A           |
-| Config Server    | 8888 | ⏳     | ❌                  | N/A           |
-| User Service     | 8081 | ⏳     | ⏳                  | ⏳            |
-| Employee Service | 8082 | ⏳     | ⏳                  | ⏳            |
-| API Gateway      | TBD  | ⏳     | ⏳                  | ⏳            |
-
-Legend:
-- ✅ Complete
-- ⏳ Pending
-- ❌ Not Required
-- ⚠️ Issue/Warning
-
-## Known Issues & Resolutions
-
-### Issue Log
-- [ ] No issues reported yet
-
-### If Services Fail to Start:
-1. Check if ports are already in use
-2. Verify PostgreSQL is running (for user_service)
-3. Check Config Server can access Git repository
-4. Ensure Eureka Server started first
-5. Review application logs for specific errors
-
-## Alternative Startup Methods
-
-### Option 1: Manual Startup (Recommended for first time)
-Follow STARTUP_GUIDE.md step by step
-
-### Option 2: Automated Startup
-Run: `start-all-services.bat`
-
-## Notes
-- Config Server must be running before other services (except Eureka)
-- User Service requires PostgreSQL database
-- Employee Service uses H2 in-memory database
-- Wait for each service to fully start before starting the next one
-- Check Eureka Dashboard to confirm service registration
-
-## Completion Criteria
-- [ ] All services running without errors
-- [ ] All services registered in Eureka
-- [ ] All services loaded configuration from Config Server
-- [ ] API Gateway can route requests to backend services
-- [ ] No error logs in any service

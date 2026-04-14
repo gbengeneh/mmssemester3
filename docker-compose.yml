@@ -1,22 +1,52 @@
-version: '3.8'
 services:
+
   eureka-server:
     build: ./eureka_server
     ports:
       - "8761:8761"
+
   config-server:
     build: ./config_server
     ports:
       - "8888:8888"
+    depends_on:
+      - eureka-server
+
   api-gateway:
     build: ./api-gateway
     ports:
-      - "8080:8080"
-  user-service:
+      - "8084:8084"
+    depends_on:
+      - eureka-server
+      - config-server
+
+  postgres:
+    image: postgres:16
+    container_name: user-postgres
+    environment:
+      POSTGRES_DB: user_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432"
+
+  user_service:
     build: ./user_service
     ports:
       - "8081:8081"
-  employee-service:
+    depends_on:
+      - postgres
+      - eureka-server
+      - config-server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_service
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 123
+
+  employee_service:
     build: ./employee_service
     ports:
       - "8082:8082"
+    depends_on:
+      - eureka-server
+      - config-server

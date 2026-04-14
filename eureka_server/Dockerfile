@@ -18,7 +18,7 @@ WORKDIR /app
 RUN addgroup -g 1000 appgroup && adduser -u 1000 -G appgroup -s /bin/sh -D appuser
 
 # Copy the built artifact from build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY target/eureka_server-0.0.1-SNAPSHOT.jar app.jar
 
 # Change ownership to non-root user
 RUN chown -R appuser:appgroup /app
