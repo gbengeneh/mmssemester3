@@ -1,0 +1,4 @@
+- [x] Add spring-boot-starter-security dependency to pom.xml
+- [x] Fix SecurityConfig.java: add imports, @EnableWebFluxSecurity, remove "pri", fix method signature
+- [x] Compile the project to verify corrections
+- [x] Test the API gateway security
