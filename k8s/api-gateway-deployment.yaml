@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: api-gateway
-        image: yourregistry/api-gateway:latest  # Update with your image
+        image: gbenga12/api_gateway:latest  # Update with your image
         ports:
         - containerPort: 8084
         volumeMounts:

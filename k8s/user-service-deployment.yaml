@@ -24,7 +24,7 @@ spec:
           mountPath: /app/config
         command: ["java"]
         args: ["-jar", "app.jar", "--spring.config.import=optional:file:/app/config/application.yml[/]", "--spring.config.location=optional:file:/app/config/application.yml"]
-        image: yourregistry/user-service:latest  # Update with your image
+        image: gbenga12/user_service:latest  # Update with your image
         ports:
         - containerPort: 8081
 # No eureka/config - use service discovery
@@ -43,16 +43,19 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /actuator/health/liveness
+            path: /actuator/health
             port: 8081
           initialDelaySeconds: 60
           periodSeconds: 30
+          failureThreshold: 5
+
         readinessProbe:
           httpGet:
-            path: /actuator/health/readiness
+            path: /actuator/health
             port: 8081
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          failureThreshold: 5
 ---
 
 

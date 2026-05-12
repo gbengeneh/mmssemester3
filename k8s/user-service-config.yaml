@@ -37,6 +37,10 @@ data:
       endpoints:
         web:
           exposure:
-            include: health,info,liveness,readiness
----
+            include: health,info
+      endpoint:
+        health:
+          probes:
+            enabled: true
+          show-details: always
 
