@@ -6,7 +6,6 @@ import com.semester3.user_service.entity.User;
 import com.semester3.user_service.service.RefreshTokenService;
 import com.semester3.user_service.service.UserService;
 import com.semester3.user_service.util.JwtUtil;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
